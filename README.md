@@ -2,7 +2,7 @@
 
 Repository with the code used for the paper "The Multivariate Bernoulli
 detector: Change point estimation in discrete survival analysis" by Willem van
-den Boom, Maria De Iorio, Fang Qian and Alessandra Guglielmi (in preparation)
+den Boom, Maria De Iorio, Fang Qian and Alessandra Guglielmi ([arXiv:2308.10583](https://arxiv.org/abs/2308.10583))
 
 
 ## Description of files
