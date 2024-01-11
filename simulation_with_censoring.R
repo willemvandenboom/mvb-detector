@@ -1,4 +1,4 @@
-### Simulation study without change points
+### Simulation study with censoring
 
 # This code produces the simulation study with censoring in Section 3 of the
 # paper "The Multivariate Bernoulli detector: Change point estimation in
