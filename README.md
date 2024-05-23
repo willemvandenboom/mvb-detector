@@ -20,5 +20,5 @@ in the paper:
 * The folder [paper/icu](paper/icu/) contains the code for the application to
 ICU length of stay.
 
-* The folder [paper/icu](paper/simulation/) contains the code for the
+* The folder [paper/simulation](paper/simulation/) contains the code for the
 simulation studies.
