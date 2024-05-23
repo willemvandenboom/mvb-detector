@@ -15,7 +15,8 @@ multivariate Bernoulli detector and which can be installed using
 Additionally, the folder [paper](paper/) contains code to reproduce the results
 in the paper:
 
-* [`paper/setup.R`] installs the required R packages including `mvb.detector`.
+* [`paper/setup.R`](paper/setup.R) installs the required R packages including
+`mvb.detector`.
 
 * The folder [paper/icu](paper/icu/) contains the code for the application to
 ICU length of stay.
