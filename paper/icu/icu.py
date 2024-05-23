@@ -503,3 +503,8 @@ fitters_table['J'] = fitters_table['J'].astype(int)
 
 fitters_table.to_csv(path_or_buf="mimic.csv", index=False)
 print(len(fitters_table))
+# The number of ICU stays is 25159, 11 less than the number mentioned in Meir
+# and Gorfine (2023, arXiv:2303.01186v2). The 11 ICU stays are excluded because
+# their discharge time precedes their admission time in MIMIC-IV, which is
+# likely an administrative error: see
+# https://github.com/MIT-LCP/mimic-code/issues/209.
