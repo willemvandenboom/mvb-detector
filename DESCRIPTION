@@ -1,0 +1,22 @@
+Package: mvb.detector
+Type: Package
+Title: The Multivariate Bernoulli Detector: Change Point Estimation in Discrete
+  Survival Analysis
+Version: 1.0
+Date: 2024-05-23
+Author: Willem van den Boom
+Maintainer: Willem van den Boom <vandenboom@nus.edu.sg>
+Description: The mvb.detector package implements the methodology for Bayesian
+  discrete survival modeling from the paper "The Multivariate Bernoulli
+  detector: Change point estimation in discrete survival analysis" by Willem van
+  den Boom, Maria De Iorio, Fang Qian and Alessandra Guglielmi
+  (arXiv:2308.10583).
+License: MIT + file LICENSE
+Imports: discSurv (>= 2.0.0), graphics, mvtnorm, Rcpp, RcppParallel, stats,
+  utils
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+Suggests: Ecdat, knitr, rmarkdown
+SystemRequirements: GNU make
+Encoding: UTF-8
+RoxygenNote: 7.3.1
+VignetteBuilder: knitr

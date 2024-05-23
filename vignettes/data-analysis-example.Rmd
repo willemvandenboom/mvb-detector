@@ -1,0 +1,165 @@
+---
+title: "Data analysis example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data analysis example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+The R package [`mvb.detector`](https://github.com/willemvandenboom/mvb-detector)
+implements the Multivariate Bernoulli detector for change point estimation in
+competing risks discrete survival analysis, which is described in [van den Boom
+et al. (2023)](https://arxiv.org/abs/2308.10583). This vignette provides an
+introduction on how to use the package.
+
+
+
+## Load and preprocess data
+
+As example data, we consider the data set on unemployment duration from [McCall
+(1996)](https://doi.org/10.2307/2171865), which is available from the R package
+`Ecdat`.
+
+
+```{r load-data}
+data("UnempDur", package = "Ecdat")
+```
+
+
+The data provide information on the time new employment after losing a job. That
+is, the event of interest is finding a new job, and time to event is measured
+from the loss of the previous job. The times are recorded discretely, in two
+week intervals. For instance, $T_i = 6$ means that the time between jobs is
+twelve weeks. Furthermore, new employment is either full-time or part-time,
+which represent $m = 2$ competing risks that can terminate the spell of
+unemployment.
+
+For simplicity, we consider the subset of cases that are right-censored (i.e.
+`censor4 = 1`) or for which it is known whether the new employment is full- or
+part-time (i.e. `censor1 = 1` or `censor2 = 1`).
+
+
+```{r subset-data}
+UnempDur_sub <- subset(UnempDur, censor1 | censor2 | censor4)
+```
+
+
+Inspired by the function `dataLongCompRisks` from the R package `discSurv`,
+`mvb.detector` requires that data are provided as a data frame with the
+following variables:
+
+1. As first variable, an integer vector `time` with the time-to-event data
+2. As second variable, a factor `event` of event types/causes with the first
+level indicating that the time was censored
+3. Optionally, additional variables that are treated as predictor values
+
+We create such data frame where we include `ui` and standardized `disrate` as
+covariates:
+
+1. The variable `ui` is a binary indicator of whether the person received
+benefits from an unemployment insurance scheme.
+2. The variable `disrate` is the disregard rate: the *disregard* is the amount
+that a person is allowed to earn in a new job without reduction in unemployment
+benefits. The *disregard rate* is the disregard divided by the earnings in the
+lost job.
+
+Finally, we right-censor all unemployment spells longer than $t=10$ to reduce
+the range of time points for ease of exposition.
+
+
+```{r preprocess-data}
+UnempDur_sub$event <- 0L
+UnempDur_sub$event[UnempDur_sub$censor1 == 1] <- 1L
+UnempDur_sub$event[UnempDur_sub$censor2 == 1] <- 2L
+
+# Right-censor unemployment spells longer than 10.
+UnempDur_sub$event[UnempDur_sub$spell > 10] <- 0L
+UnempDur_sub$spell <- pmin(10, UnempDur_sub$spell)
+
+UnempDur_sub$event <- factor(x = UnempDur_sub$event, levels = 0:2)
+levels(UnempDur_sub$event) <- c("censored", "Full-time", "Part-time")
+
+data <- data.frame(
+  time = as.integer(UnempDur_sub$spell), event = UnempDur_sub$event,
+  X = cbind(UnempDur_sub$ui == "yes", scale(UnempDur_sub$disrate))
+)
+
+summary(data)
+```
+
+
+
+## Fit the Multivariate Bernoulli detector
+
+We fit the Multivariate Bernoulli detector to the data using 20000 Markov chain
+Monte Carlo (MCMC) iterations, discarding the first 10000 as burn-in.
+
+
+```{r run_mvb_detector, results = "hide"}
+set.seed(1L)  # Set seed for reproducibility.
+
+mvbd_fit <- mvb.detector::run_mvb_detector(
+  data = data, n_iter = 2e4L, burnin = 1e4L
+)
+```
+
+
+
+## Summarize posterior inference
+
+The MCMC iterations are now saved in `mvbd_fit`. The package provides a variety
+of functions to summarize the corresponding posterior inference. Firstly, we
+plot the posterior on the number of change points, and find that the posterior
+concentrates on two change points.
+
+
+```{r plot_K}
+mvb.detector::plot_K(mvbd_fit)
+```
+
+
+To inspect the location of the change points, we plot posterior inclusion
+probabilities and Bayes factors:
+
+
+```{r plot_chang_points}
+par(mar = c(5, 4, 4, 4))  # Increase right margin to make space for labels.
+mvb.detector::plot_change_points(mvbd_fit)
+```
+
+
+The change points are mostly at $t=2$ and $t=8$ in the posterior distribution.
+The second change point ($t=8$) might not be present for the hazard rate
+specific to part-time re-employment. The posterior mean and 95% credible
+intervals of the baseline hazards are consistent with this:
+
+
+```{r plot_baseline_hazards}
+mvb.detector::plot_baseline_hazards(mvbd_fit)
+```
+
+
+For the regression coefficients, we can compute posterior inclusion
+probabilities, and plot posterior means and 95% credible intervals. In the
+output below, no effect of disregard rate on part-time re-employment is
+inferred. At the same time, the other covariate effects are negative: employment
+benefits are associated with a longer time to re-employment. The same holds for
+disregard rate and full-time re-employment. A potential explanation is that
+those with a higher disregard rate prefer to take a part-time job instead of a
+full-time job to maximize unemployment benefits, which is in line with Table III
+of [McCall (1996)](https://doi.org/10.2307/2171865).
+
+
+```{r plot_regression, fig.width = 5}
+pred_names <- c("Unemployment insurance", "Disregard rate")
+
+mvb.detector::compute_post_inc_prob(
+  mvbd_fit = mvbd_fit, pred_names = pred_names, digits = 3L
+)
+
+par(mar = c(5, 10, 4, 2))  # Increase left margin to makes space for labels.
+mvb.detector::plot_regression(mvbd_fit = mvbd_fit, pred_names = pred_names)
+```
