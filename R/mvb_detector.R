@@ -487,8 +487,8 @@ s2_beta <- 1  # Gaussian prior on the nonzero beta, i.e. the slab variance
 #'   \code{log_lik_MCMC} \tab Vector with log-likelihood values of the MCMC
 #'     samples. \cr
 #'   \code{data} \tab The value of the function argument \code{data} \cr
-#'   \code{data} \tab The value of the function argument \code{cp_constraint}
-#'     \cr
+#'   \code{cp_constraint} \tab The value of the function argument
+#'     \code{cp_constraint} \cr
 #' }
 #' 
 #' @export
